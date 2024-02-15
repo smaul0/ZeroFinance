@@ -11,6 +11,6 @@
   - 1. LP's will get the Fees earned from borrower
   - 2. Second from Blast claimable ETH reward
 
-- **Borrower deposits ETH and get a interest free USDB loan by one time borrowing fee.**
+- **Borrower deposits ETH and get a interest free USDB loan by paying one time borrowing fee.**
 
 **Double Earning Only possible for Blast L2 default Interest Accumulation**
