@@ -58,9 +58,12 @@ contract ZeroFinance is Ownable, IZeroFinance {
         poolUSDB += amount;
 
         if (LP.length == 0 ) {
+            
             LP.push(msg.sender);
             lpIndex[msg.sender] = 0;
+
         } else if (!_findAddressInLP(msg.sender)) {
+
             LP.push(msg.sender);
             lpIndex[msg.sender] = LP.length - 1;
         }
