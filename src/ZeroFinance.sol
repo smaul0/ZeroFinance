@@ -28,10 +28,10 @@ contract ZeroFinance is Ownable, IZeroFinance {
         uint256 depositTimestamp;
     }
     /// @notice Keep track of the user deposited liquidity
-    mapping (address lp => Liquidity user) depositedLiquidity;
+    mapping (address lp => Liquidity user) public depositedLiquidity;
 
-    mapping (address borrower => uint256 collateralAmount) userCollateral;
-    mapping (address borrower => uint256 borrowAmount) borrowedCollateral;
+    mapping (address borrower => uint256 collateralAmount) public userCollateral;
+    mapping (address borrower => uint256 borrowAmount) public borrowedCollateral;
 
     constructor() Ownable(msg.sender) {
         USDB = IERC20Rebasing(0x4200000000000000000000000000000000000022);
@@ -47,15 +47,20 @@ contract ZeroFinance is Ownable, IZeroFinance {
         require(amount >= 100e18, "Minimum deposit 100 USDB");
         USDB.transferFrom(msg.sender, address(this), amount);
 
-        depositedLiquidity[msg.sender] = Liquidity({
-            lpAmount: amount,
+        Liquidity memory _liquidity = Liquidity({
+            lpAmount: depositedLiquidity[msg.sender].lpAmount + amount,
             depositTimestamp: block.timestamp
         });
+
+        depositedLiquidity[msg.sender] = _liquidity;
 
         totalDepositedUSDB += amount;
         poolUSDB += amount;
 
-        if (!_findAddressInLP(msg.sender)) {
+        if (LP.length == 0 ) {
+            LP.push(msg.sender);
+            lpIndex[msg.sender] = 0;
+        } else if (!_findAddressInLP(msg.sender)) {
             LP.push(msg.sender);
             lpIndex[msg.sender] = LP.length - 1;
         }
@@ -168,6 +173,8 @@ contract ZeroFinance is Ownable, IZeroFinance {
             userCollateral[borrower] = 0;
 
             payable(msg.sender).transfer(collateral);
+
+            return collateral;
         }
     }
 
@@ -183,6 +190,10 @@ contract ZeroFinance is Ownable, IZeroFinance {
 
     function getLPLength() public view returns (uint) {
         return LP.length;
+    }
+
+    function getDepositedLiquidity(address lp) public view returns(uint256) {
+        return depositedLiquidity[lp].lpAmount;
     }
 
     function _checkCollateralRatio(address _user, uint256 _assetPrice, uint256 borrowed) internal view {
@@ -202,7 +213,7 @@ contract ZeroFinance is Ownable, IZeroFinance {
     }
 
      /// @notice @TO-DO Hardcoded asset Price, Will change after getting some reliable Oracle on Blast
-    function _ethPrice() internal returns(uint256) {
+    function _ethPrice() internal pure returns(uint256) {
         return 2000e18; 
     }
 }
